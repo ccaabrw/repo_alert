@@ -21,12 +21,12 @@ def load_configuration():
         'github_token': os.getenv('GITHUB_TOKEN'),
         'github_username': os.getenv('GITHUB_USERNAME'),
         'smtp_server': os.getenv('SMTP_SERVER', 'smtp.gmail.com'),
-        'smtp_port': int(os.getenv('SMTP_PORT', '587')),
+        'smtp_port': int(os.getenv('SMTP_PORT') or '587'),
         'smtp_username': os.getenv('SMTP_USERNAME'),
         'smtp_password': os.getenv('SMTP_PASSWORD'),
         'email_from': os.getenv('EMAIL_FROM'),
         'email_to': os.getenv('EMAIL_TO'),
-        'repo_filter': os.getenv('REPO_FILTER', '').strip(),
+        'repo_filter': (os.getenv('REPO_FILTER') or '').strip(),
     }
     
     # Validate required configuration
