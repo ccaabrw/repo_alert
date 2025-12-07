@@ -17,11 +17,20 @@ def load_configuration():
     """Load configuration from environment variables."""
     load_dotenv()
     
+    # Parse SMTP port with validation
+    smtp_port_str = os.getenv('SMTP_PORT') or '587'
+    try:
+        smtp_port = int(smtp_port_str)
+        if smtp_port < 1 or smtp_port > 65535:
+            raise ValueError(f"SMTP_PORT must be between 1 and 65535, got {smtp_port}")
+    except ValueError as e:
+        raise ValueError(f"Invalid SMTP_PORT value '{smtp_port_str}': {e}")
+    
     config = {
         'github_token': os.getenv('GITHUB_TOKEN'),
         'github_username': os.getenv('GITHUB_USERNAME'),
         'smtp_server': os.getenv('SMTP_SERVER', 'smtp.gmail.com'),
-        'smtp_port': int(os.getenv('SMTP_PORT') or '587'),
+        'smtp_port': smtp_port,
         'smtp_username': os.getenv('SMTP_USERNAME'),
         'smtp_password': os.getenv('SMTP_PASSWORD'),
         'email_from': os.getenv('EMAIL_FROM'),
@@ -109,7 +118,7 @@ def format_email_body(pull_requests: List[Dict[str, Any]], username: str) -> str
             <body>
                 <h2>Pull Request Alert</h2>
                 <p>Good news! You have no pull requests assigned to you at the moment.</p>
-                <p>Checked on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
+                <p>Checked on: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
             </body>
         </html>
         """
@@ -142,7 +151,7 @@ def format_email_body(pull_requests: List[Dict[str, Any]], username: str) -> str
             {pr_list_html}
             <hr style="border: 0; border-top: 1px solid #e1e4e8; margin: 20px 0;">
             <p style="font-size: 12px; color: #586069;">
-                This is an automated alert generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+                This is an automated alert generated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
             </p>
         </body>
     </html>
