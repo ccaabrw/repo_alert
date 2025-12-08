@@ -17,8 +17,74 @@
 [CmdletBinding()]
 param()
 
-# Import the email formatting function from the main script
-. (Join-Path $PSScriptRoot "Check-PrAlerts.ps1")
+# Function to format email body (copied from main script for demo purposes)
+function Format-EmailBody {
+    param(
+        [array]$PullRequests,
+        [string]$Username
+    )
+    
+    $currentTime = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss UTC')
+    
+    if ($PullRequests.Count -eq 0) {
+        return @"
+<html>
+    <body>
+        <h2>Pull Request Alert</h2>
+        <p>Good news! You have no pull requests assigned to you at the moment.</p>
+        <p>Checked on: $currentTime</p>
+    </body>
+</html>
+"@
+    }
+    
+    $prListHtml = ""
+    foreach ($pr in $PullRequests) {
+        $labelsHtml = if ($pr.Labels.Count -gt 0) {
+            ($pr.Labels | ForEach-Object {
+                "<span style='background-color: #e1e4e8; padding: 2px 6px; border-radius: 3px; font-size: 12px;'>$_</span>"
+            }) -join ", "
+        } else {
+            "None"
+        }
+        
+        $createdStr = $pr.CreatedAt.ToString('yyyy-MM-dd HH:mm:ss')
+        $updatedStr = $pr.UpdatedAt.ToString('yyyy-MM-dd HH:mm:ss')
+        
+        $prListHtml += @"
+
+        <div style="border: 1px solid #e1e4e8; border-radius: 6px; padding: 15px; margin-bottom: 15px; background-color: #f6f8fa;">
+            <h3 style="margin-top: 0;">
+                <a href="$($pr.Url)" style="color: #0366d6; text-decoration: none;">$($pr.Title)</a>
+            </h3>
+            <p style="margin: 5px 0;">
+                <strong>Repository:</strong> $($pr.Repository)<br>
+                <strong>PR Number:</strong> #$($pr.Number)<br>
+                <strong>Author:</strong> $($pr.Author)<br>
+                <strong>Created:</strong> $createdStr<br>
+                <strong>Last Updated:</strong> $updatedStr<br>
+                <strong>Labels:</strong> $labelsHtml
+            </p>
+        </div>
+"@
+    }
+    
+    $htmlBody = @"
+<html>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; color: #24292e;">
+        <h2 style="color: #24292e;">Pull Request Alert for @$Username</h2>
+        <p>You have <strong>$($PullRequests.Count)</strong> pull request(s) assigned to you:</p>
+        $prListHtml
+        <hr style="border: 0; border-top: 1px solid #e1e4e8; margin: 20px 0;">
+        <p style="font-size: 12px; color: #586069;">
+            This is an automated alert generated on $currentTime
+        </p>
+    </body>
+</html>
+"@
+    
+    return $htmlBody
+}
 
 function Show-DemoEmailFormatting {
     <#

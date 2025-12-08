@@ -122,7 +122,7 @@ EMAIL_FROM=from@test.com
 EMAIL_TO=to@test.com
 "@ | Out-File -FilePath $tempEnvFile -Encoding UTF8
             
-            { Get-Configuration -EnvFilePath $tempEnvFile } | Should -Throw "SMTP_PORT must be between 1 and 65535*"
+            { Get-Configuration -EnvFilePath $tempEnvFile } | Should -Throw "Invalid SMTP_PORT*"
         }
     }
 }
