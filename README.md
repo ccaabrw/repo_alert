@@ -132,7 +132,7 @@ on:
 
 jobs:
   check-prs:
-    runs-on: windows-latest  # or ubuntu-latest for PowerShell Core
+    runs-on: windows-latest  # or ubuntu-latest/macos-latest for PowerShell Core (works on Windows, Linux, and macOS)
     steps:
       - uses: actions/checkout@v3
       - name: Check for assigned PRs

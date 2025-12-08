@@ -137,7 +137,8 @@ function Show-DemoEmailFormatting {
     $htmlBody = Format-EmailBody -PullRequests $samplePrs -Username "demo_user"
     
     # Save to file for viewing
-    $outputFile = "/tmp/demo_email.html"
+    $tempDir = if ($env:TEMP) { $env:TEMP } elseif ($env:TMPDIR) { $env:TMPDIR } else { '/tmp' }
+    $outputFile = Join-Path $tempDir "demo_email.html"
     $htmlBody | Out-File -FilePath $outputFile -Encoding UTF8
     
     Write-Host "Generated email with $($samplePrs.Count) pull requests"
@@ -157,7 +158,7 @@ function Show-DemoEmailFormatting {
     
     $htmlBodyEmpty = Format-EmailBody -PullRequests @() -Username "demo_user"
     
-    $outputFileEmpty = "/tmp/demo_email_empty.html"
+    $outputFileEmpty = Join-Path $tempDir "demo_email_empty.html"
     $htmlBodyEmpty | Out-File -FilePath $outputFileEmpty -Encoding UTF8
     
     Write-Host "Email HTML saved to: $outputFileEmpty"
