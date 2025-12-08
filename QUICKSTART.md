@@ -4,23 +4,17 @@ This guide will help you get started with Repo Alert in under 5 minutes.
 
 ## Prerequisites
 
-- Python 3.7 or higher installed
+- PowerShell 5.1 or higher (Windows PowerShell or PowerShell Core)
 - A GitHub account with a Personal Access Token
 - An email account with SMTP access (Gmail recommended)
 
 ## Setup Steps
 
-### 1. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Configure Environment Variables
+### 1. Configure Environment Variables
 
 Copy the example environment file:
-```bash
-cp .env.example .env
+```powershell
+Copy-Item .env.example .env
 ```
 
 Edit the `.env` file with your credentials:
@@ -50,10 +44,10 @@ EMAIL_TO=your.email@gmail.com
 3. Select "Mail" and generate password
 4. Use this password in SMTP_PASSWORD
 
-### 3. Run the Script
+### 2. Run the Script
 
-```bash
-python check_pr_alerts.py
+```powershell
+.\Check-PrAlerts.ps1
 ```
 
 You should see output like:
@@ -72,16 +66,25 @@ Process completed successfully!
 ### Run Demo (Optional)
 
 See example email output without needing credentials:
-```bash
-python demo.py
+```powershell
+.\Demo.ps1
 ```
 
-### Automate with Cron
+### Automate with Task Scheduler (Windows)
+
+1. Open Task Scheduler
+2. Create a new task
+3. Set trigger to run every hour
+4. Set action:
+   - Program: `powershell.exe`
+   - Arguments: `-ExecutionPolicy Bypass -File "C:\path\to\repo_alert\Check-PrAlerts.ps1"`
+
+### Automate with Cron (Linux/Mac with PowerShell Core)
 
 Run every hour:
 ```bash
 crontab -e
-# Add: 0 * * * * cd /path/to/repo_alert && python3 check_pr_alerts.py
+# Add: 0 * * * * cd /path/to/repo_alert && /usr/local/bin/pwsh -File Check-PrAlerts.ps1
 ```
 
 ### Filter Specific Repositories
