@@ -1,6 +1,6 @@
 # Repo Alert
 
-A Python tool that checks for GitHub pull requests assigned to you and sends email notifications.
+A PowerShell tool that checks for GitHub pull requests assigned to you and sends email notifications.
 
 ## Features
 
@@ -16,26 +16,21 @@ A Python tool that checks for GitHub pull requests assigned to you and sends ema
 
 ## Requirements
 
-- Python 3.7 or higher
+- PowerShell 5.1 or higher (Windows PowerShell or PowerShell Core)
 - GitHub Personal Access Token
 - SMTP email account (e.g., Gmail)
 
 ## Installation
 
 1. Clone the repository:
-```bash
+```powershell
 git clone https://github.com/ccaabrw/repo_alert.git
 cd repo_alert
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Configure environment variables:
-```bash
-cp .env.example .env
+2. Configure environment variables:
+```powershell
+Copy-Item .env.example .env
 ```
 
 Edit the `.env` file with your actual credentials:
@@ -80,8 +75,8 @@ For Gmail, you'll need to use an App Password:
 
 Run the script to check for assigned pull requests and send an email notification:
 
-```bash
-python check_pr_alerts.py
+```powershell
+.\Check-PrAlerts.ps1
 ```
 
 ### Output Example
@@ -104,7 +99,15 @@ Summary of assigned pull requests:
 
 You can automate this script to run periodically using:
 
-### Cron (Linux/Mac)
+1. Open Task Scheduler
+2. Create a new task
+3. Set trigger to run every hour
+4. Set action to run:
+   - Program: `powershell.exe`
+   - Arguments: `-ExecutionPolicy Bypass -File "C:\path\to\repo_alert\Check-PrAlerts.ps1"`
+   - Start in: `C:\path\to\repo_alert`
+
+### Scheduled Task (Linux/Mac with PowerShell Core)
 
 Add to your crontab to run every hour:
 ```bash
@@ -113,15 +116,8 @@ crontab -e
 
 Add this line:
 ```
-0 * * * * cd /path/to/repo_alert && /usr/bin/python3 check_pr_alerts.py >> /var/log/repo_alert.log 2>&1
+0 * * * * cd /path/to/repo_alert && /usr/local/bin/pwsh -File Check-PrAlerts.ps1 >> /var/log/repo_alert.log 2>&1
 ```
-
-### Task Scheduler (Windows)
-
-1. Open Task Scheduler
-2. Create a new task
-3. Set trigger to run every hour
-4. Set action to run `python check_pr_alerts.py` in the repository directory
 
 ### GitHub Actions
 
@@ -136,16 +132,11 @@ on:
 
 jobs:
   check-prs:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # or ubuntu-latest/macos-latest for PowerShell Core (works on Windows, Linux, and macOS)
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
       - name: Check for assigned PRs
+        shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           GITHUB_USERNAME: ${{ secrets.GH_USERNAME }}
@@ -155,7 +146,21 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
-        run: python check_pr_alerts.py
+        run: |
+          # Create .env file from environment variables
+          @"
+          GITHUB_TOKEN=$env:GITHUB_TOKEN
+          GITHUB_USERNAME=$env:GITHUB_USERNAME
+          SMTP_SERVER=$env:SMTP_SERVER
+          SMTP_PORT=$env:SMTP_PORT
+          SMTP_USERNAME=$env:SMTP_USERNAME
+          SMTP_PASSWORD=$env:SMTP_PASSWORD
+          EMAIL_FROM=$env:EMAIL_FROM
+          EMAIL_TO=$env:EMAIL_TO
+          "@ | Out-File -FilePath .env -Encoding UTF8
+          
+          # Run the script
+          .\Check-PrAlerts.ps1
 ```
 
 Don't forget to add the secrets in your repository settings!
